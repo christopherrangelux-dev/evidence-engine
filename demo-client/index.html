@@ -1,1 +1,333 @@
-<!doctype html><title>Evidence Engine</title><p>Demo client coming in Phase 4.</p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidence Engine — Night Window</title>
+<meta name="description" content="An MCP server that shows its reasoning. Plan an astrophotography shoot window and see the weighted evidence behind the recommendation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+	:root {
+		--sky: #0b0e14;
+		--panel: #10141d;
+		--ink: #d5dae3;
+		--dim: #7d8593;
+		--line: #232936;
+		--redlamp: #ff5347;
+		--amber: #e0a458;
+		--ok: #9fd8a4;
+		--mono: 'IBM Plex Mono', ui-monospace, monospace;
+		--serif: 'Instrument Serif', georgia, serif;
+	}
+	* { box-sizing: border-box; margin: 0; }
+	html { color-scheme: dark; }
+	body {
+		background: var(--sky);
+		color: var(--ink);
+		font-family: var(--mono);
+		font-size: 14px;
+		line-height: 1.55;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+	}
+	main { width: min(720px, 100% - 2.5rem); margin: 0 auto; flex: 1; }
+
+	/* ---------- header ---------- */
+	header { padding: 2.75rem 0 2rem; }
+	.wordmark {
+		font-size: 12px;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--dim);
+	}
+	.wordmark strong { color: var(--ink); font-weight: 500; }
+	h1 {
+		font-family: var(--serif);
+		font-weight: 400;
+		font-size: clamp(2rem, 6vw, 2.9rem);
+		line-height: 1.1;
+		margin-top: 0.75rem;
+	}
+	h1 em { font-style: italic; color: var(--amber); }
+	.lede { color: var(--dim); margin-top: 0.65rem; max-width: 54ch; }
+
+	/* ---------- form ---------- */
+	form {
+		display: grid;
+		grid-template-columns: 1fr auto auto auto;
+		gap: 0.5rem;
+		padding: 1rem;
+		background: var(--panel);
+		border: 1px solid var(--line);
+		border-radius: 6px;
+	}
+	label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+	input, select, button {
+		font: inherit;
+		color: var(--ink);
+		background: var(--sky);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		padding: 0.6rem 0.75rem;
+	}
+	input::placeholder { color: var(--dim); }
+	input:focus-visible, select:focus-visible, button:focus-visible {
+		outline: 2px solid var(--amber);
+		outline-offset: 1px;
+	}
+	button[type=submit] {
+		background: var(--ink);
+		color: var(--sky);
+		border-color: var(--ink);
+		font-weight: 500;
+		cursor: pointer;
+	}
+	button[type=submit]:hover { background: #fff; }
+	button[type=submit][disabled] { opacity: 0.55; cursor: wait; }
+	.examples { margin-top: 0.75rem; color: var(--dim); font-size: 12.5px; }
+	.examples button {
+		background: none; border: none; padding: 0;
+		color: var(--amber); cursor: pointer;
+		text-decoration: underline dotted;
+		font-size: inherit;
+	}
+
+	/* ---------- result ---------- */
+	#result { margin-top: 2.5rem; }
+	.status { color: var(--dim); }
+	.status.error { color: var(--redlamp); }
+
+	.rec { padding-bottom: 1.75rem; border-bottom: 1px solid var(--line); }
+	.rec-label {
+		font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+		color: var(--dim);
+	}
+	.rec-window {
+		font-family: var(--serif);
+		font-size: clamp(1.7rem, 5.5vw, 2.6rem);
+		line-height: 1.15;
+		margin: 0.4rem 0 0.75rem;
+	}
+	.confidence {
+		display: inline-block;
+		font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+		border: 1px solid; border-radius: 3px;
+		padding: 0.2rem 0.55rem;
+	}
+	.confidence.high { color: var(--ok); }
+	.confidence.medium { color: var(--amber); }
+	.confidence.low { color: var(--redlamp); }
+	.rec-summary { color: var(--dim); margin-top: 0.9rem; max-width: 60ch; }
+
+	/* ---------- evidence ledger (the point) ---------- */
+	.ledger { margin-top: 1.9rem; }
+	.ledger-title {
+		font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+		color: var(--dim); margin-bottom: 0.35rem;
+	}
+	.ledger-key { font-size: 12px; color: var(--dim); margin-bottom: 1.2rem; }
+	.factor {
+		padding: 0.9rem 0;
+		border-top: 1px solid var(--line);
+	}
+	.factor-head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+	.factor-name { font-weight: 500; }
+	.factor-name .flag { color: var(--redlamp); font-weight: 400; }
+	.factor-name .lead { color: var(--ok); font-weight: 400; }
+	.source {
+		font-size: 11.5px; color: var(--dim);
+		border: 1px solid var(--line); border-radius: 3px;
+		padding: 0.05rem 0.45rem;
+		align-self: center;
+	}
+	.factor-value { color: var(--dim); margin-top: 0.25rem; max-width: 62ch; }
+
+	/* Bar: track width = factor weight, fill = factor score */
+	.bar-row { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
+	.bar-track {
+		height: 8px; border-radius: 4px;
+		background: var(--line);
+		overflow: hidden;
+	}
+	.bar-fill {
+		height: 100%;
+		background: var(--ink);
+		border-radius: 4px;
+	}
+	.factor.dominant .bar-fill { background: var(--ok); }
+	.factor.blocking .bar-fill { background: var(--redlamp); }
+	.bar-note { font-size: 11.5px; color: var(--dim); white-space: nowrap; }
+
+	@media (prefers-reduced-motion: no-preference) {
+		.reveal { animation: rise 0.45s both; }
+		.reveal:nth-child(2) { animation-delay: 0.08s; }
+		.reveal:nth-child(3) { animation-delay: 0.16s; }
+		.reveal:nth-child(4) { animation-delay: 0.24s; }
+		@keyframes rise {
+			from { opacity: 0; transform: translateY(8px); }
+			to { opacity: 1; transform: none; }
+		}
+		.bar-fill { transition: width 0.6s ease 0.3s; }
+	}
+
+	/* ---------- footer ---------- */
+	footer {
+		margin-top: 3.5rem;
+		padding: 1.5rem 0 2rem;
+		border-top: 1px solid var(--line);
+		color: var(--dim); font-size: 12.5px;
+		width: min(720px, 100% - 2.5rem);
+		margin-left: auto; margin-right: auto;
+	}
+	footer a { color: var(--amber); }
+	footer code { color: var(--ink); }
+
+	@media (max-width: 640px) {
+		form { grid-template-columns: 1fr 1fr; }
+		input[name=location] { grid-column: 1 / -1; }
+		button[type=submit] { grid-column: 1 / -1; }
+	}
+</style>
+</head>
+<body>
+<main>
+	<header>
+		<p class="wordmark"><strong>Evidence Engine</strong> · MCP server · tool 01</p>
+		<h1>Night Window <em>shows its work.</em></h1>
+		<p class="lede">Pick a location. The engine reasons across moon phase, cloud
+		forecast, and light pollution — and returns the weighted evidence behind its
+		recommendation, not just a verdict.</p>
+	</header>
+
+	<form id="plan-form">
+		<label for="location">Location</label>
+		<input id="location" name="location" placeholder="City or lat,long" required autocomplete="off">
+		<label for="range">Date range</label>
+		<select id="range" name="date_range">
+			<option value="next 7 days">Next 7 days</option>
+			<option value="next 3 days">Next 3 days</option>
+			<option value="tonight">Tonight</option>
+			<option value="next 14 days">Next 14 days</option>
+		</select>
+		<label for="target">Target</label>
+		<select id="target" name="target">
+			<option value="milky_way">Milky Way</option>
+			<option value="moon">Moon</option>
+			<option value="planets">Planets</option>
+			<option value="general" selected>General</option>
+		</select>
+		<button type="submit">Plan window</button>
+	</form>
+	<p class="examples">Try:
+		<button type="button" data-loc="Moab" data-target="milky_way">Moab · Milky Way</button> ·
+		<button type="button" data-loc="New York" data-target="milky_way">New York · Milky Way</button> ·
+		<button type="button" data-loc="Flagstaff" data-target="moon">Flagstaff · Moon</button>
+	</p>
+
+	<section id="result" aria-live="polite"></section>
+</main>
+
+<footer>
+	<p>Same engine, two transports: this page calls <code>POST /api/plan</code>;
+	MCP clients connect to <code>/mcp</code> (Streamable HTTP).
+	Light pollution uses a curated static dataset — a documented scoping decision.
+	<a href="https://github.com/christopherrangelux-dev/evidence-engine">Source & README</a></p>
+</footer>
+
+<script>
+const form = document.getElementById('plan-form');
+const result = document.getElementById('result');
+const submitBtn = form.querySelector('button[type=submit]');
+
+document.querySelectorAll('.examples button').forEach((b) => {
+	b.addEventListener('click', () => {
+		form.location.value = b.dataset.loc;
+		form.target.value = b.dataset.target;
+		form.requestSubmit();
+	});
+});
+
+form.addEventListener('submit', async (e) => {
+	e.preventDefault();
+	submitBtn.disabled = true;
+	result.innerHTML = '<p class="status">Reasoning across moon, weather, and sky darkness…</p>';
+	try {
+		const res = await fetch('/api/plan', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				location: form.location.value,
+				date_range: form.date_range.value,
+				target: form.target.value,
+			}),
+		});
+		const data = await res.json();
+		if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+		render(data);
+	} catch (err) {
+		result.innerHTML = '<p class="status error">' + escapeHtml(err.message) + '</p>';
+	} finally {
+		submitBtn.disabled = false;
+	}
+});
+
+// Track width encodes the factor's weight for this target.
+const WEIGHT_PCT = { high: 100, medium: 62, low: 30 };
+
+function render(data) {
+	const rec = data.recommendation;
+	const html = [];
+
+	html.push(
+		'<div class="rec reveal">',
+		'<p class="rec-label">Best window — ' + escapeHtml(data.meta.resolved_location) +
+			' · ' + escapeHtml(data.meta.target).replace('_', ' ') + '</p>',
+		'<p class="rec-window">' + escapeHtml(rec.best_window) + '</p>',
+		'<span class="confidence ' + rec.confidence + '">confidence: ' + rec.confidence + '</span>',
+		'<p class="rec-summary">' + escapeHtml(rec.summary) + '</p>',
+		'</div>',
+		'<div class="ledger">',
+		'<p class="ledger-title reveal">Evidence trail</p>',
+		'<p class="ledger-key reveal">Bar length = how much this factor is weighted for your target. Fill = how well it scored. ' +
+			data.meta.nights_considered + ' nights considered.</p>'
+	);
+
+	for (const ev of data.evidence) {
+		const trackPct = WEIGHT_PCT[ev.weight] ?? 50;
+		const fillPct = ev.score == null ? 0 : Math.round(ev.score * 100);
+		const cls = ['factor', 'reveal', ev.dominant ? 'dominant' : '', ev.blocking ? 'blocking' : '']
+			.filter(Boolean).join(' ');
+		const tag = ev.blocking
+			? ' <span class="flag">▲ blocking factor</span>'
+			: ev.dominant ? ' <span class="lead">● led the call</span>' : '';
+		html.push(
+			'<div class="' + cls + '">',
+			'<div class="factor-head">',
+			'<span class="factor-name">' + escapeHtml(ev.factor).replace('_', ' ') + tag + '</span>',
+			'<span class="source">' + escapeHtml(ev.source) + '</span>',
+			'</div>',
+			'<p class="factor-value">' + escapeHtml(ev.value) + '</p>',
+			'<div class="bar-row">',
+			'<div class="bar-track" style="width:' + trackPct * 0.7 + '%">',
+			'<div class="bar-fill" style="width:' + fillPct + '%"></div>',
+			'</div>',
+			'<span class="bar-note">weight ' + ev.weight +
+				(ev.score == null ? ' · no data' : ' · score ' + ev.score.toFixed(2)) + '</span>',
+			'</div>',
+			'</div>'
+		);
+	}
+	html.push('</div>');
+	result.innerHTML = html.join('');
+}
+
+function escapeHtml(s) {
+	return String(s).replace(/[&<>"']/g, (c) =>
+		({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+</script>
+</body>
+</html>
