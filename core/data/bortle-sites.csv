@@ -1,0 +1,75 @@
+name,lat,lon,bortle
+Death Valley National Park CA,36.505,-117.079,2
+Big Bend National Park TX,29.25,-103.25,1
+Cherry Springs State Park PA,41.663,-77.823,2
+Great Basin National Park NV,38.983,-114.3,2
+Natural Bridges National Monument UT,37.601,-110.014,2
+Headlands Dark Sky Park MI,45.777,-84.776,2
+Mauna Kea HI,19.821,-155.468,1
+Bryce Canyon National Park UT,37.593,-112.187,2
+Joshua Tree National Park CA,33.881,-115.9,3
+Acadia National Park ME,44.35,-68.216,3
+Shenandoah National Park VA,38.53,-78.435,4
+Adirondack Park NY,44.113,-74.256,3
+Boundary Waters MN,47.947,-91.5,2
+Flagstaff AZ,35.198,-111.651,4
+Moab UT,38.573,-109.549,3
+Bend OR,44.058,-121.315,4
+Sedona AZ,34.87,-111.761,4
+Taos NM,36.407,-105.573,3
+Jackson WY,43.48,-110.762,3
+Bar Harbor ME,44.388,-68.204,4
+Asheville NC,35.595,-82.551,5
+Boulder CO,40.015,-105.271,5
+Santa Fe NM,35.687,-105.938,5
+Boise ID,43.615,-116.202,5
+Burlington VT,44.476,-73.212,5
+Colorado Springs CO,38.834,-104.821,6
+Tucson AZ,32.222,-110.975,6
+Albuquerque NM,35.084,-106.65,6
+Salt Lake City UT,40.761,-111.891,6
+Sacramento CA,38.582,-121.494,7
+Portland OR,45.515,-122.678,7
+Austin TX,30.267,-97.743,7
+Nashville TN,36.163,-86.781,7
+Raleigh NC,35.78,-78.638,7
+Minneapolis MN,44.978,-93.265,7
+Denver CO,39.739,-104.99,8
+Seattle WA,47.606,-122.332,8
+San Diego CA,32.716,-117.161,8
+Phoenix AZ,33.448,-112.074,8
+Atlanta GA,33.749,-84.388,8
+Boston MA,42.36,-71.058,8
+Dallas TX,32.777,-96.797,8
+Houston TX,29.76,-95.369,8
+Miami FL,25.762,-80.192,8
+Washington DC,38.907,-77.037,8
+Philadelphia PA,39.953,-75.165,8
+Chicago IL,41.878,-87.63,9
+San Francisco CA,37.775,-122.419,9
+Los Angeles CA,34.052,-118.244,9
+New York NY,40.713,-74.006,9
+London UK,51.507,-0.128,9
+Paris France,48.857,2.352,9
+Tokyo Japan,35.677,139.65,9
+Berlin Germany,52.52,13.405,8
+Sydney Australia,-33.869,151.209,8
+Toronto Canada,43.653,-79.383,8
+Vancouver Canada,49.283,-123.121,7
+Mexico City Mexico,19.433,-99.133,9
+Atacama Desert Chile,-24.5,-69.25,1
+NamibRand Nature Reserve Namibia,-25.017,16.017,1
+Aoraki Mackenzie New Zealand,-43.735,170.096,2
+Exmoor National Park UK,51.14,-3.75,3
+Pic du Midi France,42.936,0.142,2
+La Palma Canary Islands,28.754,-17.885,2
+Tenerife Teide Canary Islands,28.272,-16.643,3
+Kerry Ireland,51.93,-10.05,2
+Brecon Beacons Wales,51.884,-3.437,3
+Westhavelland Germany,52.688,12.4,3
+Reykjavik Iceland,64.147,-21.942,6
+Anchorage AK,61.218,-149.9,6
+Fairbanks AK,64.838,-147.716,5
+Yellowstone National Park WY,44.428,-110.588,2
+Glacier National Park MT,48.76,-113.787,2
+Badlands National Park SD,43.855,-102.34,2
