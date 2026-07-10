@@ -1,0 +1,30 @@
+{
+  "name": "evidence-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "An MCP server that shows its reasoning. First tool: Night Window, an astrophotography shoot planner that returns the weighted evidence behind every recommendation.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch mcp-server/server.ts",
+    "start": "tsx mcp-server/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "evals": "tsx evals/run.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "hono": "^4.6.14",
+    "tsx": "^4.19.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
