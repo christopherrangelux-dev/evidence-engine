@@ -250,22 +250,45 @@ document.querySelectorAll('.examples button').forEach((b) => {
 	});
 });
 
+// The server is scale-to-zero on Fly, so it may be asleep. A cold POST can
+// land on a still-booting machine and get an HTML error page back. Warm it
+// on load (a harmless HEAD) so it's awake by the time anyone clicks Plan.
+fetch('/', { method: 'HEAD' }).catch(() => {});
+
+// POST the plan, retrying once if the machine was mid-cold-start (which comes
+// back as an HTML/5xx response, not JSON). The retry hits the warmed machine.
+async function requestPlan(body) {
+	for (let attempt = 0; attempt < 2; attempt++) {
+		const res = await fetch('/api/plan', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		});
+		const type = res.headers.get('content-type') || '';
+		// Cold-start / proxy error: not JSON. Retry once before giving up.
+		if (!type.includes('application/json')) {
+			if (attempt === 0) {
+				await new Promise((r) => setTimeout(r, 1200));
+				continue;
+			}
+			throw new Error('The engine is waking up. Give it a second and try again.');
+		}
+		const data = await res.json();
+		if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+		return data;
+	}
+}
+
 form.addEventListener('submit', async (e) => {
 	e.preventDefault();
 	submitBtn.disabled = true;
 	result.innerHTML = '<p class="status">Reasoning across moon, weather, and sky darkness…</p>';
 	try {
-		const res = await fetch('/api/plan', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				location: form.location.value,
-				date_range: form.date_range.value,
-				target: form.target.value,
-			}),
+		const data = await requestPlan({
+			location: form.location.value,
+			date_range: form.date_range.value,
+			target: form.target.value,
 		});
-		const data = await res.json();
-		if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
 		render(data);
 	} catch (err) {
 		result.innerHTML = '<p class="status error">' + escapeHtml(err.message) + '</p>';
