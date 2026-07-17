@@ -1,0 +1,33 @@
+# Fly.io config — scale-to-zero posture (see docs/deploy-notes.md).
+#
+# The machine stops after a short idle and bills nothing while stopped (this
+# app is stateless — no volume — so a stopped machine costs $0). The next
+# request cold-starts it in ~1–2s. Flip to always-warm later by setting
+# min_machines_running = 1 and redeploying; no other change needed.
+
+app = "evidence-engine"
+primary_region = "sjc" # San Jose (US West). Change to a region near you if preferred.
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"   # stop the machine when idle → $0 while stopped
+  auto_start_machines = true    # cold-start it again on the next request
+  min_machines_running = 0      # scale-to-zero: keep no machine warm
+  processes = ["app"]
+
+  # Liveness probe. Fly won't run this against an intentionally-stopped
+  # machine, so it doesn't defeat scale-to-zero.
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpus = 1

@@ -1,0 +1,12 @@
+# Keep the build context small and the image clean. Source dirs are COPYed
+# explicitly in the Dockerfile, so anything not needed at runtime stays out.
+node_modules
+.git
+.github
+evals
+docs
+*.log
+.DS_Store
+.env
+.env.local
+.fly
