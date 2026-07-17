@@ -4,6 +4,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { planShootWindow } from '../core/index.js';
+import { loggedPlan } from './log.js';
 
 export function buildMcpServer(): McpServer {
 	const server = new McpServer({
@@ -36,7 +37,9 @@ export function buildMcpServer(): McpServer {
 		},
 		async (args) => {
 			try {
-				const result = await planShootWindow(args);
+				const result = await loggedPlan('/mcp', args, (input) =>
+					planShootWindow(input),
+				);
 				return {
 					content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
 				};

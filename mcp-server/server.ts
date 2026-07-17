@@ -11,6 +11,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { planShootWindow } from '../core/index.js';
 import { buildMcpServer } from './mcp.js';
 import { rateLimit } from './rate-limit.js';
+import { log, loggedPlan } from './log.js';
 
 const app = new Hono<{
 	Bindings: { incoming: import('node:http').IncomingMessage; outgoing: import('node:http').ServerResponse };
@@ -33,11 +34,15 @@ app.post('/api/plan', rateLimit(30, 5 * 60 * 1000), async (c) => {
 		return c.json({ error: '"target" must be one of milky_way, moon, planets, general.' }, 400);
 	}
 	try {
-		const result = await planShootWindow({
-			location,
-			date_range: typeof date_range === 'string' ? date_range : undefined,
-			target: target as never,
-		});
+		const result = await loggedPlan(
+			'/api/plan',
+			{
+				location,
+				date_range: typeof date_range === 'string' ? date_range : undefined,
+				target: target as never,
+			},
+			(input) => planShootWindow(input),
+		);
 		return c.json(result);
 	} catch (err) {
 		return c.json({ error: (err as Error).message }, 422);
@@ -71,5 +76,5 @@ app.use('/*', serveStatic({ root: './demo-client' }));
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, (info) => {
-	console.log(JSON.stringify({ msg: 'listening', port: info.port }));
+	log('info', 'listening', { port: info.port });
 });
