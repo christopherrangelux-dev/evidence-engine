@@ -255,8 +255,12 @@ document.querySelectorAll('.examples button').forEach((b) => {
 // on load (a harmless HEAD) so it's awake by the time anyone clicks Plan.
 fetch('/', { method: 'HEAD' }).catch(() => {});
 
-// POST the plan, retrying once if the machine was mid-cold-start (which comes
-// back as an HTML/5xx response, not JSON). The retry hits the warmed machine.
+// POST the plan. Two non-JSON failure modes are handled distinctly:
+//   - Cold start: the scale-to-zero machine is booting and Fly hands back a
+//     5xx/HTML page. Transient — retry once against the now-warm machine.
+//   - Network block: a corporate proxy/VPN rejects the request outright
+//     (typically 403, sometimes an HTML interstitial with a 2xx status).
+//     Retrying can't help, so fail fast with an accurate message.
 async function requestPlan(body) {
 	for (let attempt = 0; attempt < 2; attempt++) {
 		const res = await fetch('/api/plan', {
@@ -265,11 +269,21 @@ async function requestPlan(body) {
 			body: JSON.stringify(body),
 		});
 		const type = res.headers.get('content-type') || '';
-		// Cold-start / proxy error: not JSON. Retry once before giving up.
 		if (!type.includes('application/json')) {
+			// 403 (or 401/407) never comes from the engine on a valid POST —
+			// it's a firewall/proxy between you and the server. No retry.
+			if (res.status === 403 || res.status === 401 || res.status === 407) {
+				throw new Error('This request was blocked before it reached the engine — likely a network firewall or VPN. Try a different network (phone hotspot, home Wi-Fi).');
+			}
+			// Otherwise treat it as a cold start and retry once.
 			if (attempt === 0) {
 				await new Promise((r) => setTimeout(r, 1200));
 				continue;
+			}
+			// Second non-JSON response: if the machine is up (2xx) it's almost
+			// certainly a proxy interstitial, not a real wake-up delay.
+			if (res.ok) {
+				throw new Error('This request was blocked before it reached the engine — likely a network firewall or VPN. Try a different network (phone hotspot, home Wi-Fi).');
 			}
 			throw new Error('The engine is waking up. Give it a second and try again.');
 		}
